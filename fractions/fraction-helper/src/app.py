@@ -329,6 +329,133 @@ class FractionHelperApp:
             
         except Exception as e:
             messagebox.showerror("Error", f"Cannot convert to improper: {e}")
+    
+    def practice_simplify_fraction(self, fraction_num):
+        """Simplify the specified fraction in practice mode"""
+        try:
+            if fraction_num == 1:
+                whole_var, num_var, den_var = self.practice_whole1_var, self.practice_num1_var, self.practice_den1_var
+            elif fraction_num == 2:
+                whole_var, num_var, den_var = self.practice_whole2_var, self.practice_num2_var, self.practice_den2_var
+            else:  # fraction_num == 3 (answer)
+                whole_var, num_var, den_var = self.ans_whole_var, self.ans_num_var, self.ans_den_var
+            
+            # Get current fraction
+            frac = self.get_fraction(whole_var, num_var, den_var)
+            
+            # Update with simplified improper fraction (no whole part)
+            whole_var.set("")
+            num_var.set(str(frac.numerator))
+            den_var.set(str(frac.denominator))
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Cannot simplify: {e}")
+    
+    def practice_extract_integer(self, fraction_num):
+        """Extract integer part from improper fraction in practice mode"""
+        try:
+            if fraction_num == 1:
+                whole_var, num_var, den_var = self.practice_whole1_var, self.practice_num1_var, self.practice_den1_var
+            elif fraction_num == 2:
+                whole_var, num_var, den_var = self.practice_whole2_var, self.practice_num2_var, self.practice_den2_var
+            else:  # fraction_num == 3 (answer)
+                whole_var, num_var, den_var = self.ans_whole_var, self.ans_num_var, self.ans_den_var
+            
+            # Get current values
+            num = int(num_var.get()) if num_var.get() else 0
+            den = int(den_var.get()) if den_var.get() else 1
+            current_whole = int(whole_var.get()) if whole_var.get() else 0
+            
+            if den == 0:
+                raise ValueError("Denominator cannot be zero")
+            
+            # Extract integer from the fraction part
+            if abs(num) >= den:
+                extracted_integer = num // den
+                remainder = num % den
+                
+                # Update fields
+                whole_var.set(str(current_whole + extracted_integer))
+                num_var.set(str(remainder))
+                den_var.set(str(den))
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Cannot extract integer: {e}")
+    
+    def practice_combine_to_improper(self, fraction_num):
+        """Convert mixed number to improper fraction in practice mode"""
+        try:
+            if fraction_num == 1:
+                whole_var, num_var, den_var = self.practice_whole1_var, self.practice_num1_var, self.practice_den1_var
+            elif fraction_num == 2:
+                whole_var, num_var, den_var = self.practice_whole2_var, self.practice_num2_var, self.practice_den2_var
+            else:  # fraction_num == 3 (answer)
+                whole_var, num_var, den_var = self.ans_whole_var, self.ans_num_var, self.ans_den_var
+            
+            # Get current values
+            whole = int(whole_var.get()) if whole_var.get() else 0
+            num = int(num_var.get()) if num_var.get() else 0
+            den = int(den_var.get()) if den_var.get() else 1
+            
+            if den == 0:
+                raise ValueError("Denominator cannot be zero")
+            
+            # Convert to improper fraction
+            if whole != 0:
+                improper_num = whole * den + num
+                
+                # Update fields
+                whole_var.set("")
+                num_var.set(str(improper_num))
+                den_var.set(str(den))
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Cannot convert to improper: {e}")
+    
+    def calculate_practice_answer(self):
+        """Calculate and fill in the correct answer for practice mode"""
+        try:
+            # Get current fraction values
+            frac1 = self.get_fraction(self.practice_whole1_var, self.practice_num1_var, self.practice_den1_var)
+            frac2 = self.get_fraction(self.practice_whole2_var, self.practice_num2_var, self.practice_den2_var)
+            
+            # Calculate result
+            if self.practice_op == '*':
+                result = frac1 * frac2
+            else:
+                if frac2 == 0:
+                    raise ValueError("Cannot divide by zero.")
+                result = frac1 / frac2
+            
+            # Display result in mixed number format
+            if result.denominator == 1:
+                # Pure integer result
+                self.ans_whole_var.set(str(result.numerator))
+                self.ans_num_var.set("")
+                self.ans_den_var.set("")
+            elif abs(result.numerator) >= result.denominator:
+                # Mixed number result
+                integer_part = result.numerator // result.denominator
+                remainder = abs(result.numerator) % result.denominator
+                
+                if remainder == 0:
+                    # Actually a whole number
+                    self.ans_whole_var.set(str(integer_part))
+                    self.ans_num_var.set("")
+                    self.ans_den_var.set("")
+                else:
+                    # True mixed number
+                    self.ans_whole_var.set(str(integer_part))
+                    self.ans_num_var.set(str(remainder))
+                    self.ans_den_var.set(str(result.denominator))
+            else:
+                # Proper fraction (numerator < denominator)
+                self.ans_whole_var.set("")
+                self.ans_num_var.set(str(result.numerator))
+                self.ans_den_var.set(str(result.denominator))
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Cannot calculate answer: {e}")
 
     def calculate(self):
         try:
@@ -461,42 +588,139 @@ class FractionHelperApp:
         q_frame = Frame(question_container, bg=BG_COLOR)
         q_frame.pack()
         
-        # First fraction box
-        frac1_frame = Frame(q_frame, bg="lightblue", relief='solid', bd=1, padx=8, pady=8)
-        frac1_frame.grid(row=0, column=0, padx=5, pady=5)
+        # Initialize practice variables for manipulation
+        self.practice_whole1_var = StringVar(value=str(w1) if w1 > 0 else "")
+        self.practice_num1_var = StringVar(value=str(n1))
+        self.practice_den1_var = StringVar(value=str(d1))
+        self.practice_whole2_var = StringVar(value=str(w2) if w2 > 0 else "")
+        self.practice_num2_var = StringVar(value=str(n2))
+        self.practice_den2_var = StringVar(value=str(d2))
         
-        # Display first fraction in box format
-        if w1 > 0:
-            Label(frac1_frame, text=str(w1), font=("Arial", 14, "bold"), bg="lightblue").grid(row=1, column=0, padx=3)
-        Label(frac1_frame, text=str(n1), font=("Arial", 14, "bold"), bg="lightblue").grid(row=0, column=1, padx=3)
-        Label(frac1_frame, text="\u2014", font=("Arial", 16), bg="lightblue").grid(row=1, column=1)
-        Label(frac1_frame, text=str(d1), font=("Arial", 14, "bold"), bg="lightblue").grid(row=2, column=1, padx=3)
+        # First fraction container
+        frac1_container = Frame(q_frame, bg=BG_COLOR)
+        frac1_container.grid(row=0, column=0, padx=10, pady=10)
+        
+        # Top row with integer and fraction side by side
+        frac1_top_frame = Frame(frac1_container, bg=BG_COLOR)
+        frac1_top_frame.pack()
+        
+        # Integer box for fraction 1
+        int1_frame = Frame(frac1_top_frame, bg="lightcyan", relief='solid', bd=1, padx=8, pady=8)
+        int1_frame.pack(side='left', padx=(0,5))
+        Label(int1_frame, text="Integer", font=("Arial", 10, "bold"), bg="lightcyan").pack()
+        Entry(int1_frame, width=4, textvariable=self.practice_whole1_var, justify='center', font=("Arial", 12)).pack()
+        
+        # Fraction box for fraction 1
+        frac1_frame = Frame(frac1_top_frame, bg="lightblue", relief='solid', bd=1, padx=8, pady=8)
+        frac1_frame.pack(side='left')
+        Label(frac1_frame, text="Fraction", font=("Arial", 10, "bold"), bg="lightblue").grid(row=0, column=0, columnspan=2)
+        Entry(frac1_frame, width=4, textvariable=self.practice_num1_var, justify='center', font=("Arial", 12)).grid(row=1, column=0, padx=3)
+        Label(frac1_frame, text="\u2014", font=("Arial", 14), bg="lightblue").grid(row=2, column=0, columnspan=2)
+        Entry(frac1_frame, width=4, textvariable=self.practice_den1_var, justify='center', font=("Arial", 12)).grid(row=3, column=0, padx=3)
+        
+        # Buttons for fraction 1
+        btn_frame1 = Frame(frac1_container, bg=BG_COLOR)
+        btn_frame1.pack(pady=(5,0))
+        
+        simplify_btn1 = Button(btn_frame1, text="⚡", font=("Arial", 10), width=2, command=lambda: self.practice_simplify_fraction(1))
+        simplify_btn1.pack(side='left', padx=1)
+        self.create_tooltip(simplify_btn1, "Simplify fraction")
+        
+        extract_btn1 = Button(btn_frame1, text="↗", font=("Arial", 10), width=2, command=lambda: self.practice_extract_integer(1))
+        extract_btn1.pack(side='left', padx=1)
+        self.create_tooltip(extract_btn1, "Extract integer")
+        
+        combine_btn1 = Button(btn_frame1, text="↙", font=("Arial", 10), width=2, command=lambda: self.practice_combine_to_improper(1))
+        combine_btn1.pack(side='left', padx=1)
+        self.create_tooltip(combine_btn1, "Convert to improper")
         
         # Operator
         op_symbol = "  ×  " if op == '*' else "  ÷  "
         Label(q_frame, text=op_symbol, font=("Arial", 20, "bold"), bg=BG_COLOR, fg=PRIMARY_COLOR).grid(row=0, column=1, padx=15)
         
-        # Second fraction box
-        frac2_frame = Frame(q_frame, bg="lightblue", relief='solid', bd=1, padx=8, pady=8)
-        frac2_frame.grid(row=0, column=2, padx=5, pady=5)
+        # Second fraction container
+        frac2_container = Frame(q_frame, bg=BG_COLOR)
+        frac2_container.grid(row=0, column=2, padx=10, pady=10)
         
-        # Display second fraction in box format
-        if w2 > 0:
-            Label(frac2_frame, text=str(w2), font=("Arial", 14, "bold"), bg="lightblue").grid(row=1, column=0, padx=3)
-        Label(frac2_frame, text=str(n2), font=("Arial", 14, "bold"), bg="lightblue").grid(row=0, column=1, padx=3)
-        Label(frac2_frame, text="\u2014", font=("Arial", 16), bg="lightblue").grid(row=1, column=1)
-        Label(frac2_frame, text=str(d2), font=("Arial", 14, "bold"), bg="lightblue").grid(row=2, column=1, padx=3)
+        # Top row with integer and fraction side by side
+        frac2_top_frame = Frame(frac2_container, bg=BG_COLOR)
+        frac2_top_frame.pack()
+        
+        # Integer box for fraction 2
+        int2_frame = Frame(frac2_top_frame, bg="lightcyan", relief='solid', bd=1, padx=8, pady=8)
+        int2_frame.pack(side='left', padx=(0,5))
+        Label(int2_frame, text="Integer", font=("Arial", 10, "bold"), bg="lightcyan").pack()
+        Entry(int2_frame, width=4, textvariable=self.practice_whole2_var, justify='center', font=("Arial", 12)).pack()
+        
+        # Fraction box for fraction 2
+        frac2_frame = Frame(frac2_top_frame, bg="lightblue", relief='solid', bd=1, padx=8, pady=8)
+        frac2_frame.pack(side='left')
+        Label(frac2_frame, text="Fraction", font=("Arial", 10, "bold"), bg="lightblue").grid(row=0, column=0, columnspan=2)
+        Entry(frac2_frame, width=4, textvariable=self.practice_num2_var, justify='center', font=("Arial", 12)).grid(row=1, column=0, padx=3)
+        Label(frac2_frame, text="\u2014", font=("Arial", 14), bg="lightblue").grid(row=2, column=0, columnspan=2)
+        Entry(frac2_frame, width=4, textvariable=self.practice_den2_var, justify='center', font=("Arial", 12)).grid(row=3, column=0, padx=3)
+        
+        # Buttons for fraction 2
+        btn_frame2 = Frame(frac2_container, bg=BG_COLOR)
+        btn_frame2.pack(pady=(5,0))
+        
+        simplify_btn2 = Button(btn_frame2, text="⚡", font=("Arial", 10), width=2, command=lambda: self.practice_simplify_fraction(2))
+        simplify_btn2.pack(side='left', padx=1)
+        self.create_tooltip(simplify_btn2, "Simplify fraction")
+        
+        extract_btn2 = Button(btn_frame2, text="↗", font=("Arial", 10), width=2, command=lambda: self.practice_extract_integer(2))
+        extract_btn2.pack(side='left', padx=1)
+        self.create_tooltip(extract_btn2, "Extract integer")
+        
+        combine_btn2 = Button(btn_frame2, text="↙", font=("Arial", 10), width=2, command=lambda: self.practice_combine_to_improper(2))
+        combine_btn2.pack(side='left', padx=1)
+        self.create_tooltip(combine_btn2, "Convert to improper")
         
         # Equals sign
         Label(q_frame, text="  =  ", font=("Arial", 20, "bold"), bg=BG_COLOR).grid(row=0, column=3, padx=15)
         
-        # Answer input box
-        answer_frame = Frame(q_frame, bg="white", relief='solid', bd=1, padx=10, pady=10)
-        answer_frame.grid(row=0, column=4, padx=5, pady=5)
+        # Answer input container
+        answer_container = Frame(q_frame, bg=BG_COLOR)
+        answer_container.grid(row=0, column=4, padx=10, pady=10)
         
-        Label(answer_frame, text="Your Answer", font=("Arial", 12, "bold"), bg="white").pack(pady=(0,5))
-        self.ans_var = StringVar()
-        Entry(answer_frame, width=12, textvariable=self.ans_var, justify='center', font=("Arial", 14)).pack()
+        # Initialize answer variables
+        self.ans_whole_var = StringVar()
+        self.ans_num_var = StringVar()  
+        self.ans_den_var = StringVar()
+        
+        # Top row with integer and fraction side by side
+        ans_top_frame = Frame(answer_container, bg=BG_COLOR)
+        ans_top_frame.pack()
+        
+        # Integer box for answer
+        ans_int_frame = Frame(ans_top_frame, bg="lightcyan", relief='solid', bd=1, padx=8, pady=8)
+        ans_int_frame.pack(side='left', padx=(0,5))
+        Label(ans_int_frame, text="Integer", font=("Arial", 10, "bold"), bg="lightcyan").pack()
+        Entry(ans_int_frame, width=4, textvariable=self.ans_whole_var, justify='center', font=("Arial", 12)).pack()
+        
+        # Fraction box for answer
+        ans_frac_frame = Frame(ans_top_frame, bg="white", relief='solid', bd=1, padx=8, pady=8)
+        ans_frac_frame.pack(side='left')
+        Label(ans_frac_frame, text="Fraction", font=("Arial", 10, "bold"), bg="white").grid(row=0, column=0, columnspan=2)
+        Entry(ans_frac_frame, width=4, textvariable=self.ans_num_var, justify='center', font=("Arial", 12)).grid(row=1, column=0, padx=3)
+        Label(ans_frac_frame, text="\u2014", font=("Arial", 14), bg="white").grid(row=2, column=0, columnspan=2)
+        Entry(ans_frac_frame, width=4, textvariable=self.ans_den_var, justify='center', font=("Arial", 12)).grid(row=3, column=0, padx=3)
+        
+        # Buttons for answer
+        ans_btn_frame = Frame(answer_container, bg=BG_COLOR)
+        ans_btn_frame.pack(pady=(5,0))
+        
+        ans_simplify_btn = Button(ans_btn_frame, text="⚡", font=("Arial", 10), width=2, command=lambda: self.practice_simplify_fraction(3))
+        ans_simplify_btn.pack(side='left', padx=1)
+        self.create_tooltip(ans_simplify_btn, "Simplify answer")
+        
+        ans_extract_btn = Button(ans_btn_frame, text="↗", font=("Arial", 10), width=2, command=lambda: self.practice_extract_integer(3))
+        ans_extract_btn.pack(side='left', padx=1)
+        self.create_tooltip(ans_extract_btn, "Extract integer")
+        
+        ans_combine_btn = Button(ans_btn_frame, text="↙", font=("Arial", 10), width=2, command=lambda: self.practice_combine_to_improper(3))
+        ans_combine_btn.pack(side='left', padx=1)
+        self.create_tooltip(ans_combine_btn, "Convert to improper")
         
         # Points label
         self.points_var = StringVar(value=f"Points: {self.points}")
@@ -508,6 +732,9 @@ class FractionHelperApp:
         button_frame = Frame(self.master, bg=BG_COLOR)
         button_frame.pack(pady=(20,10))
         self.practice_widgets.append(button_frame)
+        
+        calc_answer_btn = Button(button_frame, text="Calculate Answer", command=self.calculate_practice_answer, font=("Arial", 12), bg=SECONDARY_COLOR, fg="white", padx=15)
+        calc_answer_btn.pack(side='left', padx=5)
         
         submit_btn = Button(button_frame, text="Submit Answer", command=self.check_practice_answer, font=("Arial", 14, "bold"), bg=SUCCESS_COLOR, fg="white", padx=20)
         submit_btn.pack(side='left', padx=10)
@@ -573,14 +800,19 @@ class FractionHelperApp:
 
     def check_practice_answer(self):
         try:
-            user_input = self.ans_var.get().strip()
-            user_frac = Fraction(user_input)
+            # Get user's answer from the answer boxes
+            user_frac = self.get_fraction(self.ans_whole_var, self.ans_num_var, self.ans_den_var)
+            
+            # Get current fraction values (they might have been modified by buttons)
+            frac1 = self.get_fraction(self.practice_whole1_var, self.practice_num1_var, self.practice_den1_var)
+            frac2 = self.get_fraction(self.practice_whole2_var, self.practice_num2_var, self.practice_den2_var)
+            
             if self.practice_op == '*':
-                correct = self.practice_frac1 * self.practice_frac2
+                correct = frac1 * frac2
             else:
-                if self.practice_frac2 == 0:
+                if frac2 == 0:
                     raise ValueError("Cannot divide by zero.")
-                correct = self.practice_frac1 / self.practice_frac2
+                correct = frac1 / frac2
             
             # Format the correct answer nicely
             if correct.denominator == 1:
