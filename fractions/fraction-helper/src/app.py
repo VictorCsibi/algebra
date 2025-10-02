@@ -412,7 +412,7 @@ class FractionHelperApp:
         # Title at the top of the window
         difficulty_name = self.difficulty.capitalize() if hasattr(self, 'difficulty') else 'Easy'
         title_label = Label(self.master, text=f"Practice Mode - {difficulty_name} Level", font=("Arial", 20, "bold"), bg=BG_COLOR, fg=DARK_TEXT_COLOR)
-        title_label.grid(row=0, column=0, columnspan=2, pady=(20, 10))
+        title_label.pack(pady=(20, 10))
         self.practice_widgets.append(title_label)
         
         # Generate random question based on difficulty
@@ -450,54 +450,83 @@ class FractionHelperApp:
         self.practice_op = op
         
         # Create a bordered frame for the question
-        question_container = Frame(self.master, bg="white", relief='raised', bd=2, padx=20, pady=15)
-        question_container.grid(row=1, column=0, columnspan=2, padx=30, pady=20)
+        question_container = Frame(self.master, bg=BG_COLOR, relief='raised', bd=2, padx=20, pady=15)
+        question_container.pack(padx=30, pady=20)
         self.practice_widgets.append(question_container)
         
-        # Display question in a single line within the box
-        q_frame = Frame(question_container, bg="white")
-        q_frame.pack()
-        self.practice_widgets.append(q_frame)
+        # Title for the question
+        Label(question_container, text="Solve:", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=DARK_TEXT_COLOR).pack(pady=(0, 10))
         
-        Label(q_frame, text="Solve:", font=("Arial", 14, "bold"), bg="white", fg=DARK_TEXT_COLOR).grid(row=0, column=0, columnspan=5, pady=(0,10))
-        Label(q_frame, text=mixed_to_str(w1, n1, d1), font=("Arial", 18, "bold"), bg="white", fg=DARK_TEXT_COLOR).grid(row=1, column=0, padx=10)
-        Label(q_frame, text=" × " if op == '*' else " ÷ ", font=("Arial", 20, "bold"), bg="white", fg=PRIMARY_COLOR).grid(row=1, column=1, padx=10)
-        Label(q_frame, text=mixed_to_str(w2, n2, d2), font=("Arial", 18, "bold"), bg="white", fg=DARK_TEXT_COLOR).grid(row=1, column=2, padx=10)
-        Label(q_frame, text=" = ", font=("Arial", 20, "bold"), bg="white").grid(row=1, column=3, padx=10)
+        # Display question using fraction boxes like calculator mode
+        q_frame = Frame(question_container, bg=BG_COLOR)
+        q_frame.pack()
+        
+        # First fraction box
+        frac1_frame = Frame(q_frame, bg="lightblue", relief='solid', bd=1, padx=8, pady=8)
+        frac1_frame.grid(row=0, column=0, padx=5, pady=5)
+        
+        # Display first fraction in box format
+        if w1 > 0:
+            Label(frac1_frame, text=str(w1), font=("Arial", 14, "bold"), bg="lightblue").grid(row=1, column=0, padx=3)
+        Label(frac1_frame, text=str(n1), font=("Arial", 14, "bold"), bg="lightblue").grid(row=0, column=1, padx=3)
+        Label(frac1_frame, text="\u2014", font=("Arial", 16), bg="lightblue").grid(row=1, column=1)
+        Label(frac1_frame, text=str(d1), font=("Arial", 14, "bold"), bg="lightblue").grid(row=2, column=1, padx=3)
+        
+        # Operator
+        op_symbol = "  ×  " if op == '*' else "  ÷  "
+        Label(q_frame, text=op_symbol, font=("Arial", 20, "bold"), bg=BG_COLOR, fg=PRIMARY_COLOR).grid(row=0, column=1, padx=15)
+        
+        # Second fraction box
+        frac2_frame = Frame(q_frame, bg="lightblue", relief='solid', bd=1, padx=8, pady=8)
+        frac2_frame.grid(row=0, column=2, padx=5, pady=5)
+        
+        # Display second fraction in box format
+        if w2 > 0:
+            Label(frac2_frame, text=str(w2), font=("Arial", 14, "bold"), bg="lightblue").grid(row=1, column=0, padx=3)
+        Label(frac2_frame, text=str(n2), font=("Arial", 14, "bold"), bg="lightblue").grid(row=0, column=1, padx=3)
+        Label(frac2_frame, text="\u2014", font=("Arial", 16), bg="lightblue").grid(row=1, column=1)
+        Label(frac2_frame, text=str(d2), font=("Arial", 14, "bold"), bg="lightblue").grid(row=2, column=1, padx=3)
+        
+        # Equals sign
+        Label(q_frame, text="  =  ", font=("Arial", 20, "bold"), bg=BG_COLOR).grid(row=0, column=3, padx=15)
+        
+        # Answer input box
+        answer_frame = Frame(q_frame, bg="white", relief='solid', bd=1, padx=10, pady=10)
+        answer_frame.grid(row=0, column=4, padx=5, pady=5)
+        
+        Label(answer_frame, text="Your Answer", font=("Arial", 12, "bold"), bg="white").pack(pady=(0,5))
         self.ans_var = StringVar()
-        Entry(q_frame, width=12, textvariable=self.ans_var, justify='center', font=("Arial", 16)).grid(row=1, column=4, padx=10)
+        Entry(answer_frame, width=12, textvariable=self.ans_var, justify='center', font=("Arial", 14)).pack()
         
         # Points label
         self.points_var = StringVar(value=f"Points: {self.points}")
         points_label = Label(self.master, textvariable=self.points_var, font=("Arial", 16, "bold"), bg=BG_COLOR, fg=DARK_TEXT_COLOR)
-        points_label.grid(row=2, column=0, columnspan=2, pady=(10,0))
+        points_label.pack(pady=(10,0))
         self.practice_widgets.append(points_label)
         
         # Buttons
         button_frame = Frame(self.master, bg=BG_COLOR)
-        button_frame.grid(row=3, column=0, columnspan=2, pady=(20,10))
+        button_frame.pack(pady=(20,10))
         self.practice_widgets.append(button_frame)
         
         submit_btn = Button(button_frame, text="Submit Answer", command=self.check_practice_answer, font=("Arial", 14, "bold"), bg=SUCCESS_COLOR, fg="white", padx=20)
         submit_btn.pack(side='left', padx=10)
-        self.practice_widgets.append(submit_btn)
         
         change_btn = Button(button_frame, text="New Problem", command=self.change_practice_problem, font=("Arial", 12), bg=PRIMARY_COLOR, fg="white", padx=15)
         change_btn.pack(side='left', padx=10)
-        self.practice_widgets.append(change_btn)
         
         # Navigation buttons
         nav_frame = Frame(self.master, bg=BG_COLOR)
-        nav_frame.grid(row=4, column=0, columnspan=2, pady=(10,20))
+        nav_frame.pack(pady=(10,20))
         self.practice_widgets.append(nav_frame)
         
         back_btn = Button(nav_frame, text="Back to Difficulty", font=("Arial", 12), bg=SECONDARY_COLOR, fg="white", command=self.show_difficulty_selection)
         back_btn.pack(side='left', padx=5)
-        self.practice_widgets.append(back_btn)
         
         home_btn = Button(nav_frame, text="Home", font=("Arial", 12), command=self.show_main_screen)
         home_btn.pack(side='left', padx=5)
-        self.practice_widgets.append(home_btn)
+        
+        self.practice_widgets.extend([submit_btn, change_btn, back_btn, home_btn])
         self.back_btn = back_btn
 
     def change_practice_problem(self):
@@ -530,12 +559,17 @@ class FractionHelperApp:
 
     def clear_practice_widgets(self):
         for w in self.practice_widgets:
-            w.destroy()
+            try:
+                w.destroy()
+            except:
+                pass
         self.practice_widgets = []
-        if self.back_btn:
-            self.back_btn.destroy()
+        if hasattr(self, 'back_btn') and self.back_btn:
+            try:
+                self.back_btn.destroy()
+            except:
+                pass
             self.back_btn = None
-        self.frame.grid(row=0, column=0, padx=10, pady=10)
 
     def check_practice_answer(self):
         try:
@@ -547,12 +581,29 @@ class FractionHelperApp:
                 if self.practice_frac2 == 0:
                     raise ValueError("Cannot divide by zero.")
                 correct = self.practice_frac1 / self.practice_frac2
+            
+            # Format the correct answer nicely
+            if correct.denominator == 1:
+                correct_str = str(correct.numerator)
+            elif abs(correct.numerator) >= correct.denominator:
+                # Mixed number
+                integer_part = correct.numerator // correct.denominator
+                remainder = abs(correct.numerator) % correct.denominator
+                if remainder == 0:
+                    correct_str = str(integer_part)
+                else:
+                    correct_str = f"{integer_part} {remainder}/{correct.denominator}"
+            else:
+                correct_str = f"{correct.numerator}/{correct.denominator}"
+            
             if user_frac == correct:
                 self.points += 1
                 messagebox.showinfo("Correct!", "Correct answer! +1 point.")
             else:
                 self.points -= 1
-                messagebox.showerror("Incorrect", f"Wrong answer. The correct answer is {correct.numerator}/{correct.denominator}. -1 point.")
+                messagebox.showerror("Incorrect", f"Wrong answer. The correct answer is {correct_str}. -1 point.")
+            
+            # Generate new problem
             self.clear_practice_widgets()
             self.show_practice_ui()
         except Exception as e:
