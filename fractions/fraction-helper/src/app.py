@@ -126,8 +126,11 @@ class FractionHelperApp:
         
         # Create boxes for each fraction
         # Fraction 1 box
-        frac1_frame = Frame(self.frame, bg="white", relief='solid', bd=1, padx=10, pady=10)
-        frac1_frame.grid(row=0, column=0, padx=10, pady=10)
+        frac1_container = Frame(self.frame, bg=BG_COLOR)
+        frac1_container.grid(row=0, column=0, padx=10, pady=10)
+        
+        frac1_frame = Frame(frac1_container, bg="white", relief='solid', bd=1, padx=10, pady=10)
+        frac1_frame.pack()
         
         Label(frac1_frame, text="First Fraction", font=("Arial", 12, "bold"), bg="white").grid(row=0, column=0, columnspan=2, pady=(0,5))
         Entry(frac1_frame, width=3, textvariable=self.whole1_var, justify='center', font=("Arial", 16)).grid(row=2, column=0, padx=5)
@@ -135,20 +138,55 @@ class FractionHelperApp:
         Label(frac1_frame, text="\u2014", font=("Arial", 18), bg="white").grid(row=2, column=1)
         Entry(frac1_frame, width=4, textvariable=self.den1_var, justify='center', font=("Arial", 16)).grid(row=3, column=1, padx=5)
         
+        # Buttons for fraction 1
+        btn_frame1 = Frame(frac1_container, bg=BG_COLOR)
+        btn_frame1.pack(pady=(5,0))
+        
+        simplify_btn1 = Button(btn_frame1, text="⚡", font=("Arial", 12), width=2, command=lambda: self.simplify_fraction(1))
+        simplify_btn1.pack(side='left', padx=1)
+        self.create_tooltip(simplify_btn1, "Simplify fraction (6/4 → 3/2)")
+        
+        extract_btn1 = Button(btn_frame1, text="↗", font=("Arial", 12), width=2, command=lambda: self.extract_integer(1))
+        extract_btn1.pack(side='left', padx=1)
+        self.create_tooltip(extract_btn1, "Extract integer (3/2 → 1 1/2)")
+        
+        combine_btn1 = Button(btn_frame1, text="↙", font=("Arial", 12), width=2, command=lambda: self.combine_to_improper(1))
+        combine_btn1.pack(side='left', padx=1)
+        self.create_tooltip(combine_btn1, "Convert to improper (1 1/2 → 3/2)")
+        
         # Operator (centered)
         op_symbol = "  ×  " if self.operation.get() == '*' else "  ÷  "
         self.operator_label = Label(self.frame, text=op_symbol, font=("Arial", 24, "bold"), bg=BG_COLOR, fg=PRIMARY_COLOR)
         self.operator_label.grid(row=0, column=1, padx=20)
         
         # Fraction 2 box
-        frac2_frame = Frame(self.frame, bg="white", relief='solid', bd=1, padx=10, pady=10)
-        frac2_frame.grid(row=0, column=2, padx=10, pady=10)
+        frac2_container = Frame(self.frame, bg=BG_COLOR)
+        frac2_container.grid(row=0, column=2, padx=10, pady=10)
+        
+        frac2_frame = Frame(frac2_container, bg="white", relief='solid', bd=1, padx=10, pady=10)
+        frac2_frame.pack()
         
         Label(frac2_frame, text="Second Fraction", font=("Arial", 12, "bold"), bg="white").grid(row=0, column=0, columnspan=2, pady=(0,5))
         Entry(frac2_frame, width=3, textvariable=self.whole2_var, justify='center', font=("Arial", 16)).grid(row=2, column=0, padx=5)
         Entry(frac2_frame, width=4, textvariable=self.num2_var, justify='center', font=("Arial", 16)).grid(row=1, column=1, padx=5)
         Label(frac2_frame, text="\u2014", font=("Arial", 18), bg="white").grid(row=2, column=1)
         Entry(frac2_frame, width=4, textvariable=self.den2_var, justify='center', font=("Arial", 16)).grid(row=3, column=1, padx=5)
+        
+        # Buttons for fraction 2
+        btn_frame2 = Frame(frac2_container, bg=BG_COLOR)
+        btn_frame2.pack(pady=(5,0))
+        
+        simplify_btn2 = Button(btn_frame2, text="⚡", font=("Arial", 12), width=2, command=lambda: self.simplify_fraction(2))
+        simplify_btn2.pack(side='left', padx=1)
+        self.create_tooltip(simplify_btn2, "Simplify fraction (6/4 → 3/2)")
+        
+        extract_btn2 = Button(btn_frame2, text="↗", font=("Arial", 12), width=2, command=lambda: self.extract_integer(2))
+        extract_btn2.pack(side='left', padx=1)
+        self.create_tooltip(extract_btn2, "Extract integer (3/2 → 1 1/2)")
+        
+        combine_btn2 = Button(btn_frame2, text="↙", font=("Arial", 12), width=2, command=lambda: self.combine_to_improper(2))
+        combine_btn2.pack(side='left', padx=1)
+        self.create_tooltip(combine_btn2, "Convert to improper (1 1/2 → 3/2)")
         
         # Equals sign (centered)
         Label(self.frame, text="  =  ", font=("Arial", 24, "bold"), bg=BG_COLOR).grid(row=0, column=3, padx=20)
@@ -198,6 +236,99 @@ class FractionHelperApp:
         self.res_integer_var.set("")
         self.res_num_var.set("")
         self.res_den_var.set("")
+    
+    def create_tooltip(self, widget, text):
+        """Create a tooltip for a widget"""
+        def on_enter(event):
+            tooltip = Label(self.master, text=text, font=("Arial", 10), 
+                          bg="lightyellow", relief="solid", bd=1, padx=5, pady=2)
+            tooltip.place(x=event.x_root - self.master.winfo_rootx() + 10, 
+                         y=event.y_root - self.master.winfo_rooty() - 30)
+            widget.tooltip = tooltip
+        
+        def on_leave(event):
+            if hasattr(widget, 'tooltip'):
+                widget.tooltip.destroy()
+                del widget.tooltip
+        
+        widget.bind("<Enter>", on_enter)
+        widget.bind("<Leave>", on_leave)
+    
+    def simplify_fraction(self, fraction_num):
+        """Simplify the specified fraction"""
+        try:
+            if fraction_num == 1:
+                whole_var, num_var, den_var = self.whole1_var, self.num1_var, self.den1_var
+            else:
+                whole_var, num_var, den_var = self.whole2_var, self.num2_var, self.den2_var
+            
+            # Get current fraction
+            frac = self.get_fraction(whole_var, num_var, den_var)
+            
+            # Update with simplified improper fraction (no whole part)
+            whole_var.set("0")
+            num_var.set(str(frac.numerator))
+            den_var.set(str(frac.denominator))
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Cannot simplify: {e}")
+    
+    def extract_integer(self, fraction_num):
+        """Extract integer part from improper fraction"""
+        try:
+            if fraction_num == 1:
+                whole_var, num_var, den_var = self.whole1_var, self.num1_var, self.den1_var
+            else:
+                whole_var, num_var, den_var = self.whole2_var, self.num2_var, self.den2_var
+            
+            # Get current values
+            num = int(num_var.get()) if num_var.get() else 0
+            den = int(den_var.get()) if den_var.get() else 1
+            current_whole = int(whole_var.get()) if whole_var.get() else 0
+            
+            if den == 0:
+                raise ValueError("Denominator cannot be zero")
+            
+            # Extract integer from the fraction part
+            if abs(num) >= den:
+                extracted_integer = num // den
+                remainder = num % den
+                
+                # Update fields
+                whole_var.set(str(current_whole + extracted_integer))
+                num_var.set(str(remainder))
+                den_var.set(str(den))
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Cannot extract integer: {e}")
+    
+    def combine_to_improper(self, fraction_num):
+        """Convert mixed number to improper fraction"""
+        try:
+            if fraction_num == 1:
+                whole_var, num_var, den_var = self.whole1_var, self.num1_var, self.den1_var
+            else:
+                whole_var, num_var, den_var = self.whole2_var, self.num2_var, self.den2_var
+            
+            # Get current values
+            whole = int(whole_var.get()) if whole_var.get() else 0
+            num = int(num_var.get()) if num_var.get() else 0
+            den = int(den_var.get()) if den_var.get() else 1
+            
+            if den == 0:
+                raise ValueError("Denominator cannot be zero")
+            
+            # Convert to improper fraction
+            if whole != 0:
+                improper_num = whole * den + num
+                
+                # Update fields
+                whole_var.set("0")
+                num_var.set(str(improper_num))
+                den_var.set(str(den))
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Cannot convert to improper: {e}")
 
     def calculate(self):
         try:
